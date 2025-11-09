@@ -1,5 +1,3 @@
-
-
 {%- doc -%}
   This block is used to display the add to cart button.
   Intended for product-form.liquid block.
@@ -13,6 +11,8 @@
   assign id = 'BuyButtons-ProductSubmitButton-' | append: block.id
 %}
 
+<script src="{{ 'notify-me.js' | asset_url }}" type="module"></script>
+
 <span
   {{ block.shopify_attributes }}
   style="--add-to-cart-font-case: {{ settings.button_text_case }};"
@@ -25,6 +25,220 @@
     add_to_cart_text: add_to_cart_text
   %}
 </span>
+
+<notify-me-component style="{% if can_add_to_cart %}display: none;{% endif %}">
+  <button id="notify-me-button" type="button" class="button button-secondary notify-me-button">
+    <span class="svg-wrapper">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </span>
+    NOTIFY ME
+  </button>
+</notify-me-component>
+{% stylesheet %}
+  .notify-me-button {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+    width: 100%;
+    margin-top: var(--margin-xs);
+  }
+
+  .notify-me-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .notify-me-modal--visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .notify-me-modal__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .notify-me-modal__content {
+    position: relative;
+    background-color: var(--color-background);
+    width: 90%;
+    max-width: 500px;
+    margin: 10% auto;
+    border-radius: var(--border-radius);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+  }
+
+  .notify-me-modal--visible .notify-me-modal__content {
+    transform: translateY(0);
+  }
+
+  .notify-me-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--padding-lg) var(--padding-lg) 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--margin-lg);
+  }
+
+  .notify-me-modal__header h3 {
+    margin: 0;
+    color: var(--color-foreground);
+    font-size: var(--font-size-h4);
+  }
+
+  .notify-me-modal__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--padding-xs);
+    color: var(--color-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease;
+  }
+
+  .notify-me-modal__close:hover {
+    background-color: var(--color-background-secondary);
+  }
+
+  .notify-me-modal__body {
+    padding: 0 var(--padding-lg) var(--padding-lg);
+  }
+
+  .notify-me-modal__body p {
+    margin: 0 0 var(--margin-md) 0;
+    color: var(--color-foreground);
+    line-height: 1.5;
+  }
+
+  .notify-me-form__field {
+    margin-bottom: var(--margin-md);
+  }
+
+  .notify-me-form__label {
+    display: block;
+    margin-bottom: var(--margin-xs);
+    font-weight: 500;
+    color: var(--color-foreground);
+    font-size: var(--font-size--sm);
+  }
+
+  .notify-me-form__input {
+    width: 100%;
+    padding: var(--padding-sm) var(--padding-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size--md);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .notify-me-form__input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
+  }
+
+  .notify-me-form__actions {
+    display: flex;
+    gap: var(--gap-sm);
+    justify-content: flex-end;
+  }
+
+  .notify-me-form__submit {
+    background-color: var(--color-primary);
+    color: var(--color-primary-contrast);
+    border: none;
+    padding: var(--padding-sm) var(--padding-lg);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size--sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .notify-me-form__submit:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+  }
+
+  .notify-me-form__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .notify-me-form__cancel {
+    background-color: transparent;
+    color: var(--color-foreground);
+    border: 1px solid var(--color-border);
+    padding: var(--padding-sm) var(--padding-lg);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size--sm);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .notify-me-form__cancel:hover {
+    background-color: var(--color-background-secondary);
+    border-color: var(--color-foreground);
+  }
+
+  .notify-me-form__message {
+    margin-top: var(--margin-md);
+    padding: var(--padding-sm) var(--padding-md);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size--sm);
+    text-align: center;
+  }
+
+  .notify-me-form__message--success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  .notify-me-form__message--error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  @media (max-width: 768px) {
+    .notify-me-modal__content {
+      width: 95%;
+      margin: 5% auto;
+    }
+
+    .notify-me-form__actions {
+      flex-direction: column;
+    }
+
+    .notify-me-form__submit,
+    .notify-me-form__cancel {
+      width: 100%;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
