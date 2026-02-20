@@ -9,65 +9,6 @@
  */
 {
   "sections": {
-    "media_with_content_Fx9Wij": {
-      "type": "media-with-content",
-      "blocks": {
-        "media": {
-          "type": "_media-without-appearance",
-          "static": true,
-          "settings": {
-            "media_type": "image",
-            "image": "shopify://shop_images/temp_rlXCQvv.jpg",
-            "link": "",
-            "video_loop": true,
-            "video_autoplay": false,
-            "image_position": "cover",
-            "video_position": "cover"
-          },
-          "blocks": {}
-        },
-        "content": {
-          "type": "_content-without-appearance",
-          "static": true,
-          "settings": {
-            "horizontal_alignment_flex_direction_column": "flex-end",
-            "vertical_alignment_flex_direction_column": "flex-end",
-            "gap": 24
-          },
-          "blocks": {
-            "jumbo_text_TKjEFG": {
-              "type": "jumbo-text",
-              "name": "t:names.jumbo_text",
-              "settings": {
-                "text": "headliner 9u: \nhof van \ncommerce",
-                "font": "heading",
-                "alignment": "right",
-                "line_height": "0.8",
-                "letter_spacing": "-0.03em",
-                "case": "none",
-                "text_effect": "blur",
-                "animation_repeat": false
-              },
-              "blocks": {}
-            }
-          },
-          "block_order": [
-            "jumbo_text_TKjEFG"
-          ]
-        }
-      },
-      "name": "t:names.editorial_jumbo_text",
-      "settings": {
-        "media_position": "right",
-        "media_width": "medium",
-        "media_height": "60svh",
-        "section_width": "full-width",
-        "extend_media": true,
-        "color_scheme": "scheme-3",
-        "padding-block-start": 0,
-        "padding-block-end": 0
-      }
-    },
     "hero_jVaWmY": {
       "type": "hero",
       "blocks": {
@@ -149,6 +90,81 @@
         "reflection_opacity": 75,
         "padding-block-start": 100,
         "padding-block-end": 48
+      }
+    },
+    "media_with_content_Fx9Wij": {
+      "type": "media-with-content",
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true,
+          "settings": {
+            "media_type": "image",
+            "image": "shopify://shop_images/temp_rlXCQvv.jpg",
+            "link": "",
+            "video_loop": true,
+            "video_autoplay": false,
+            "image_position": "cover",
+            "video_position": "cover"
+          },
+          "blocks": {}
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-end",
+            "vertical_alignment_flex_direction_column": "flex-end",
+            "gap": 24
+          },
+          "blocks": {
+            "jumbo_text_TKjEFG": {
+              "type": "jumbo-text",
+              "name": "t:names.jumbo_text",
+              "settings": {
+                "text": "headliner 9u: \nhof van \ncommerce",
+                "font": "heading",
+                "alignment": "right",
+                "line_height": "0.8",
+                "letter_spacing": "-0.03em",
+                "case": "none",
+                "text_effect": "blur",
+                "animation_repeat": false
+              },
+              "blocks": {}
+            },
+            "button_dxrH4p": {
+              "type": "button",
+              "name": "t:names.button",
+              "settings": {
+                "label": "lees meer",
+                "link": "shopify://pages/hellow",
+                "open_in_new_tab": false,
+                "style_class": "button",
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "jumbo_text_TKjEFG",
+            "button_dxrH4p"
+          ]
+        }
+      },
+      "name": "t:names.editorial_jumbo_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "medium",
+        "media_height": "60svh",
+        "section_width": "full-width",
+        "extend_media": true,
+        "color_scheme": "scheme-3",
+        "padding-block-start": 0,
+        "padding-block-end": 0
       }
     },
     "product_list_qU3bEB": {
@@ -412,8 +428,8 @@
     }
   },
   "order": [
-    "media_with_content_Fx9Wij",
     "hero_jVaWmY",
+    "media_with_content_Fx9Wij",
     "product_list_qU3bEB"
   ]
 }
