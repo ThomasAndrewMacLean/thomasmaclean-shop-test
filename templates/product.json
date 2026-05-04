@@ -67,13 +67,6 @@
             "padding-inline-end": 0
           },
           "blocks": {
-            "prado_app_star_rating_RwhP6M": {
-              "type": "shopify://apps/prado-app/blocks/star_rating/019df3a9-f535-78b2-bacb-6583360427df",
-              "settings": {
-                "product": "{{closest.product}}",
-                "colour": "#ff0000"
-              }
-            },
             "group_icgrde": {
               "type": "group",
               "name": "Header",
@@ -232,6 +225,12 @@
                 }
               },
               "block_order": []
+            },
+            "prado_app_configurator_button_yRygQq": {
+              "type": "shopify://apps/prado-app/blocks/configurator-button/019df3a9-f535-78b2-bacb-6583360427df",
+              "settings": {
+                "button_label": "Configure product"
+              }
             },
             "group_JbmQwr": {
               "type": "group",
@@ -470,11 +469,11 @@
             }
           },
           "block_order": [
-            "prado_app_star_rating_RwhP6M",
             "group_icgrde",
             "divider_VJhene",
             "variant_picker_R3rGDr",
             "buy_buttons_eYQEYi",
+            "prado_app_configurator_button_yRygQq",
             "group_JbmQwr",
             "text_aEtTtq"
           ]
