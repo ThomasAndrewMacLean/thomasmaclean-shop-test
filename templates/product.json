@@ -226,7 +226,7 @@
               },
               "block_order": []
             },
-            "prado_app_configurator_button_yRygQq": {
+            "prado_app_configurator_button_nFMq6b": {
               "type": "shopify://apps/prado-app/blocks/configurator-button/019df3a9-f535-78b2-bacb-6583360427df",
               "settings": {
                 "button_label": "Configure product"
@@ -473,7 +473,7 @@
             "divider_VJhene",
             "variant_picker_R3rGDr",
             "buy_buttons_eYQEYi",
-            "prado_app_configurator_button_yRygQq",
+            "prado_app_configurator_button_nFMq6b",
             "group_JbmQwr",
             "text_aEtTtq"
           ]
