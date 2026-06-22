@@ -78,7 +78,7 @@
 
         <p class="popup-signup__message popup-signup__message--success" data-popup-signup-success hidden>
           Thanks! Continue to complete account setup.
-          <a href="{{ routes.account_login_url }}" data-popup-signup-continue>Continue</a>
+          <a href="{{ routes.storefront_login_url }}" data-popup-signup-continue>Continue</a>
         </p>
       </form>
     </div>
@@ -277,12 +277,18 @@
         }
 
         const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
+        const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        loginUrl.searchParams.set('return_to', returnPath);
+        loginUrl.searchParams.set('return_url', returnPath);
         loginUrl.searchParams.set('email', emailValue);
+        loginUrl.searchParams.set('identifier', emailValue);
         continueLink.setAttribute('href', loginUrl.toString());
 
         if (successMessage) {
           successMessage.hidden = false;
         }
+
+        window.location.assign(loginUrl.toString());
       });
     });
   })();
