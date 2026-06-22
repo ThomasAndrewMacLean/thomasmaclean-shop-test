@@ -28,6 +28,7 @@
 
       {%- form 'customer', class: 'popup-signup__form', data-popup-signup-form: '' -%}
         <input type="hidden" name="contact[tags]" value="popup-signup" data-popup-signup-tags>
+        <input type="hidden" name="customer[accepts_marketing]" value="false" data-popup-signup-marketing-hidden>
 
         <label class="popup-signup__field">
           <span class="popup-signup__label">First name</span>
@@ -77,6 +78,8 @@
             {% endif %}
           >
         </label>
+
+        
 
         <button type="submit" class="popup-signup__submit button button-primary">Sign up</button>
 
