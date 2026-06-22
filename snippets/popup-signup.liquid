@@ -28,7 +28,6 @@
 
       {%- form 'customer', class: 'popup-signup__form', data-popup-signup-form: '' -%}
         <input type="hidden" name="contact[tags]" value="popup-signup" data-popup-signup-tags>
-        <input type="hidden" name="customer[accepts_marketing]" value="false" data-popup-signup-marketing-hidden>
 
         <label class="popup-signup__field">
           <span class="popup-signup__label">First name</span>
@@ -79,15 +78,7 @@
           >
         </label>
 
-        <label class="popup-signup__consent">
-          <input
-            type="checkbox"
-            name="customer[accepts_marketing]"
-            value="true"
-            data-popup-signup-marketing
-          >
-          <span>I agree to receive email marketing updates.</span>
-        </label>
+        
 
         <button type="submit" class="popup-signup__submit button button-primary">Sign up</button>
 
@@ -101,7 +92,7 @@
         {%- if form.posted_successfully? -%}
           <p class="popup-signup__message popup-signup__message--success">
             Thanks! Continue to complete account setup.
-            <a href="{{ routes.account_login_url }}">Continue</a>
+            <a href="{{ routes.account_login_url }}" data-popup-signup-continue>Continue</a>
           </p>
         {%- endif -%}
       {%- endform -%}
@@ -235,6 +226,7 @@
 <script>
   (() => {
     const openStateKey = 'popup-signup-open';
+    const emailStateKey = 'popup-signup-email';
     const roots = document.querySelectorAll('[data-popup-signup]');
 
     roots.forEach((root) => {
@@ -250,6 +242,7 @@
       const tagsInput = root.querySelector('[data-popup-signup-tags]');
       const marketingCheckbox = root.querySelector('[data-popup-signup-marketing]');
       const marketingHiddenInput = root.querySelector('[data-popup-signup-marketing-hidden]');
+      const continueLink = root.querySelector('[data-popup-signup-continue]');
 
       if (!dialog || !openButton || !closeButton || !form || !tagsInput || !marketingHiddenInput) {
         return;
@@ -276,7 +269,12 @@
       form.addEventListener('submit', () => {
         sessionStorage.setItem(openStateKey, 'true');
         const birthdayInput = form.querySelector('input[name="contact[birthday]"]');
+        const emailInput = form.querySelector('input[name="contact[email]"]');
         const tags = ['popup-signup'];
+
+        if (emailInput && emailInput.value) {
+          sessionStorage.setItem(emailStateKey, emailInput.value.trim());
+        }
 
         if (marketingCheckbox && marketingCheckbox.checked) {
           tags.push('marketing-opt-in');
@@ -297,6 +295,15 @@
       if (sessionStorage.getItem(openStateKey) === 'true' && typeof dialog.showModal === 'function') {
         dialog.showModal();
         sessionStorage.removeItem(openStateKey);
+      }
+
+      if (continueLink) {
+        const savedEmail = sessionStorage.getItem(emailStateKey);
+        if (savedEmail) {
+          const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
+          loginUrl.searchParams.set('email', savedEmail);
+          continueLink.setAttribute('href', loginUrl.toString());
+        }
       }
     });
   })();
