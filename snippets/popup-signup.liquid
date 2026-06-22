@@ -1,0 +1,262 @@
+<div class="popup-signup" data-popup-signup>
+	<button
+		type="button"
+		class="popup-signup__trigger button button-primary"
+		data-popup-signup-open
+		aria-haspopup="dialog"
+	>
+		Become a customer
+	</button>
+
+	<dialog
+		class="popup-signup__dialog"
+		data-popup-signup-dialog
+		aria-label="Customer signup"
+	>
+		<div class="popup-signup__panel">
+			<button
+				type="button"
+				class="popup-signup__close"
+				data-popup-signup-close
+				aria-label="Close signup dialog"
+			>
+				&times;
+			</button>
+
+			<h2 class="popup-signup__heading">Create your customer account</h2>
+			<p class="popup-signup__subheading">
+				Submit your details to start your new Shopify account signup.
+			</p>
+
+			{%- form 'customer', class: 'popup-signup__form', data-popup-signup-form: '' -%}
+				<input type="hidden" name="contact[tags]" value="popup-signup" data-popup-signup-tags>
+
+				<label class="popup-signup__field">
+					<span class="popup-signup__label">First name</span>
+					<input
+						class="popup-signup__input"
+						type="text"
+						name="contact[first_name]"
+						autocomplete="given-name"
+						required
+					>
+				</label>
+
+				<label class="popup-signup__field">
+					<span class="popup-signup__label">Family name</span>
+					<input
+						class="popup-signup__input"
+						type="text"
+						name="contact[last_name]"
+						autocomplete="family-name"
+						required
+					>
+				</label>
+
+				<label class="popup-signup__field">
+					<span class="popup-signup__label">Birthday</span>
+					<input
+						class="popup-signup__input"
+						type="date"
+						name="contact[birthday]"
+						autocomplete="bday"
+						required
+					>
+				</label>
+
+				<label class="popup-signup__field">
+					<span class="popup-signup__label">Email</span>
+					<input
+						class="popup-signup__input"
+						type="email"
+						name="contact[email]"
+						autocorrect="off"
+						autocapitalize="off"
+						autocomplete="email"
+						required
+						{% if form.errors %}
+							aria-invalid="true"
+						{% endif %}
+					>
+				</label>
+
+				<button type="submit" class="popup-signup__submit button button-primary">
+					Sign up
+				</button>
+
+				{%- if form.errors -%}
+					<p class="popup-signup__message popup-signup__message--error">
+						{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+					</p>
+				{%- endif -%}
+
+				{%- if form.posted_successfully? -%}
+					<p class="popup-signup__message popup-signup__message--success">
+						Thanks! Continue to complete account setup.
+						<a href="{{ routes.account_login_url }}">Continue</a>
+					</p>
+				{%- endif -%}
+			{%- endform -%}
+		</div>
+	</dialog>
+</div>
+
+<style>
+	.popup-signup {
+		position: fixed;
+		left: 1rem;
+		bottom: 1rem;
+		z-index: 50;
+	}
+
+	.popup-signup__trigger {
+		border-radius: 999px;
+		box-shadow: 0 8px 30px rgb(0 0 0 / 20%);
+	}
+
+	.popup-signup__dialog {
+		width: min(94vw, 480px);
+		border: 0;
+		border-radius: 1rem;
+		padding: 0;
+		background: transparent;
+	}
+
+	.popup-signup__dialog::backdrop {
+		background: rgb(0 0 0 / 45%);
+	}
+
+	.popup-signup__panel {
+		position: relative;
+		padding: 1.5rem;
+		border-radius: 1rem;
+		background: var(--color-background, #fff);
+		color: var(--color-foreground, #111);
+	}
+
+	.popup-signup__close {
+		position: absolute;
+		top: 0.6rem;
+		right: 0.6rem;
+		width: 2rem;
+		height: 2rem;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		font-size: 1.5rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.popup-signup__heading {
+		margin: 0 2rem 0.4rem 0;
+	}
+
+	.popup-signup__subheading {
+		margin: 0 0 1rem;
+		opacity: 0.8;
+	}
+
+	.popup-signup__form {
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.popup-signup__field {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.popup-signup__label {
+		font-size: 0.9rem;
+	}
+
+	.popup-signup__input {
+		width: 100%;
+		min-height: 2.75rem;
+		border: 1px solid rgb(0 0 0 / 18%);
+		border-radius: 0.5rem;
+		padding: 0.65rem 0.75rem;
+		background: transparent;
+		color: inherit;
+	}
+
+	.popup-signup__submit {
+		justify-self: start;
+		margin-top: 0.35rem;
+	}
+
+	.popup-signup__message {
+		margin: 0.25rem 0 0;
+		font-size: 0.9rem;
+	}
+
+	.popup-signup__message--error {
+		color: #b42318;
+	}
+
+	.popup-signup__message--success {
+		color: #067647;
+	}
+
+	@media screen and (max-width: 749px) {
+		.popup-signup {
+			left: 0.75rem;
+			right: 0.75rem;
+			bottom: 0.75rem;
+		}
+
+		.popup-signup__trigger {
+			width: 100%;
+		}
+	}
+</style>
+
+<script>
+	(() => {
+		const roots = document.querySelectorAll('[data-popup-signup]');
+
+		roots.forEach((root) => {
+			if (root.dataset.popupSignupReady === 'true') {
+				return;
+			}
+			root.dataset.popupSignupReady = 'true';
+
+			const dialog = root.querySelector('[data-popup-signup-dialog]');
+			const openButton = root.querySelector('[data-popup-signup-open]');
+			const closeButton = root.querySelector('[data-popup-signup-close]');
+			const form = root.querySelector('[data-popup-signup-form]');
+			const tagsInput = root.querySelector('[data-popup-signup-tags]');
+
+			if (!dialog || !openButton || !closeButton || !form || !tagsInput) {
+				return;
+			}
+
+			openButton.addEventListener('click', () => {
+				if (typeof dialog.showModal === 'function') {
+					dialog.showModal();
+				}
+			});
+
+			closeButton.addEventListener('click', () => {
+				dialog.close();
+			});
+
+			dialog.addEventListener('click', (event) => {
+				if (event.target === dialog) {
+					dialog.close();
+				}
+			});
+
+			form.addEventListener('submit', () => {
+				const birthdayInput = form.querySelector('input[name="contact[birthday]"]');
+				if (!birthdayInput || !birthdayInput.value) {
+					tagsInput.value = 'popup-signup';
+					return;
+				}
+
+				tagsInput.value = `popup-signup,birthday:${birthdayInput.value}`;
+			});
+		});
+	})();
+</script>
