@@ -79,8 +79,6 @@
           >
         </label>
 
-        
-
         <button type="submit" class="popup-signup__submit button button-primary">Sign up</button>
 
         {%- if form.errors -%}
@@ -241,14 +239,12 @@
       set(key, value) {
         try {
           sessionStorage.setItem(key, value);
-        } catch (_error) {
-        }
+        } catch (_error) {}
       },
       remove(key) {
         try {
           sessionStorage.removeItem(key);
-        } catch (_error) {
-        }
+        } catch (_error) {}
       },
     };
 
@@ -276,8 +272,7 @@
           try {
             dialog.showModal();
             return;
-          } catch (_error) {
-          }
+          } catch (_error) {}
         }
 
         dialog.setAttribute('open', 'open');
