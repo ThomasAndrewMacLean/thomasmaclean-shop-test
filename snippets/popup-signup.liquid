@@ -279,9 +279,7 @@
         const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
         const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
         loginUrl.searchParams.set('return_to', returnPath);
-        loginUrl.searchParams.set('return_url', returnPath);
-        loginUrl.searchParams.set('email', emailValue);
-        loginUrl.searchParams.set('identifier', emailValue);
+        loginUrl.searchParams.set('login_hint', emailValue);
         continueLink.setAttribute('href', loginUrl.toString());
 
         if (successMessage) {
