@@ -26,16 +26,14 @@
       <h2 class="popup-signup__heading">Create your customer account</h2>
       <p class="popup-signup__subheading">Submit your details to start your new Shopify account signup.</p>
 
-      {%- form 'customer', class: 'popup-signup__form', data-popup-signup-form: '' -%}
-        <input type="hidden" name="contact[tags]" value="popup-signup" data-popup-signup-tags>
-        <input type="hidden" name="customer[accepts_marketing]" value="false" data-popup-signup-marketing-hidden>
+      <form class="popup-signup__form" data-popup-signup-form>
 
         <label class="popup-signup__field">
           <span class="popup-signup__label">First name</span>
           <input
             class="popup-signup__input"
             type="text"
-            name="contact[first_name]"
+            name="first_name"
             autocomplete="given-name"
             required
           >
@@ -46,7 +44,7 @@
           <input
             class="popup-signup__input"
             type="text"
-            name="contact[last_name]"
+            name="last_name"
             autocomplete="family-name"
             required
           >
@@ -57,7 +55,7 @@
           <input
             class="popup-signup__input"
             type="date"
-            name="contact[birthday]"
+            name="birthday"
             autocomplete="bday"
             required
           >
@@ -68,33 +66,21 @@
           <input
             class="popup-signup__input"
             type="email"
-            name="contact[email]"
+            name="email"
             autocorrect="off"
             autocapitalize="off"
             autocomplete="email"
             required
-            {% if form.errors %}
-              aria-invalid="true"
-            {% endif %}
           >
         </label>
 
         <button type="submit" class="popup-signup__submit button button-primary">Sign up</button>
 
-        {%- if form.errors -%}
-          <p class="popup-signup__message popup-signup__message--error">
-            {{ form.errors.translated_fields.email | capitalize }}
-            {{ form.errors.messages.email }}
-          </p>
-        {%- endif -%}
-
-        {%- if form.posted_successfully? -%}
-          <p class="popup-signup__message popup-signup__message--success">
-            Thanks! Continue to complete account setup.
-            <a href="{{ routes.account_login_url }}" data-popup-signup-continue>Continue</a>
-          </p>
-        {%- endif -%}
-      {%- endform -%}
+        <p class="popup-signup__message popup-signup__message--success" data-popup-signup-success hidden>
+          Thanks! Continue to complete account setup.
+          <a href="{{ routes.account_login_url }}" data-popup-signup-continue>Continue</a>
+        </p>
+      </form>
     </div>
   </dialog>
 </div>
@@ -224,29 +210,7 @@
 
 <script>
   (() => {
-    const openStateKey = 'popup-signup-open';
-    const emailStateKey = 'popup-signup-email';
     const roots = document.querySelectorAll('[data-popup-signup]');
-
-    const safeStorage = {
-      get(key) {
-        try {
-          return sessionStorage.getItem(key);
-        } catch (_error) {
-          return null;
-        }
-      },
-      set(key, value) {
-        try {
-          sessionStorage.setItem(key, value);
-        } catch (_error) {}
-      },
-      remove(key) {
-        try {
-          sessionStorage.removeItem(key);
-        } catch (_error) {}
-      },
-    };
 
     roots.forEach((root) => {
       if (root.dataset.popupSignupReady === 'true') {
@@ -258,10 +222,10 @@
       const openButton = root.querySelector('[data-popup-signup-open]');
       const closeButton = root.querySelector('[data-popup-signup-close]');
       const form = root.querySelector('[data-popup-signup-form]');
-      const tagsInput = root.querySelector('[data-popup-signup-tags]');
+      const successMessage = root.querySelector('[data-popup-signup-success]');
       const continueLink = root.querySelector('[data-popup-signup-continue]');
 
-      if (!dialog || !openButton || !closeButton || !form || !tagsInput ) {
+      if (!dialog || !openButton || !closeButton || !form) {
         return;
       }
 
@@ -286,54 +250,40 @@
       };
 
       openButton.addEventListener('click', () => {
+        if (successMessage) {
+          successMessage.hidden = true;
+        }
         openDialog();
       });
 
       closeButton.addEventListener('click', () => {
-        safeStorage.remove(openStateKey);
         closeDialog();
       });
 
       dialog.addEventListener('click', (event) => {
         if (event.target === dialog) {
-          safeStorage.remove(openStateKey);
           closeDialog();
         }
       });
 
-      form.addEventListener('submit', () => {
-        safeStorage.set(openStateKey, 'true');
-        const birthdayInput = form.querySelector('input[name="contact[birthday]"]');
-        const emailInput = form.querySelector('input[name="contact[email]"]');
-        const tags = ['popup-signup'];
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
 
-        if (emailInput && emailInput.value) {
-          safeStorage.set(emailStateKey, emailInput.value.trim());
-        }
+        const emailInput = form.querySelector('input[name="email"]');
+        const emailValue = emailInput && emailInput.value ? emailInput.value.trim() : '';
 
-
-        if (!birthdayInput || !birthdayInput.value) {
-          tagsInput.value = tags.join(',');
+        if (!emailValue || !continueLink) {
           return;
         }
 
-        tags.push(`birthday:${birthdayInput.value}`);
-        tagsInput.value = tags.join(',');
-      });
+        const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
+        loginUrl.searchParams.set('email', emailValue);
+        continueLink.setAttribute('href', loginUrl.toString());
 
-      if (safeStorage.get(openStateKey) === 'true') {
-        openDialog();
-        safeStorage.remove(openStateKey);
-      }
-
-      if (continueLink) {
-        const savedEmail = safeStorage.get(emailStateKey);
-        if (savedEmail) {
-          const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
-          loginUrl.searchParams.set('email', savedEmail);
-          continueLink.setAttribute('href', loginUrl.toString());
+        if (successMessage) {
+          successMessage.hidden = false;
         }
-      }
+      });
     });
   })();
 </script>
