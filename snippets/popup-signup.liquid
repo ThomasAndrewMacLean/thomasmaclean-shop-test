@@ -230,6 +230,28 @@
     const emailStateKey = 'popup-signup-email';
     const roots = document.querySelectorAll('[data-popup-signup]');
 
+    const safeStorage = {
+      get(key) {
+        try {
+          return sessionStorage.getItem(key);
+        } catch (_error) {
+          return null;
+        }
+      },
+      set(key, value) {
+        try {
+          sessionStorage.setItem(key, value);
+        } catch (_error) {
+        }
+      },
+      remove(key) {
+        try {
+          sessionStorage.removeItem(key);
+        } catch (_error) {
+        }
+      },
+    };
+
     roots.forEach((root) => {
       if (root.dataset.popupSignupReady === 'true') {
         return;
@@ -249,32 +271,51 @@
         return;
       }
 
-      openButton.addEventListener('click', () => {
+      const openDialog = () => {
         if (typeof dialog.showModal === 'function') {
-          dialog.showModal();
+          try {
+            dialog.showModal();
+            return;
+          } catch (_error) {
+          }
         }
+
+        dialog.setAttribute('open', 'open');
+      };
+
+      const closeDialog = () => {
+        if (typeof dialog.close === 'function') {
+          dialog.close();
+          return;
+        }
+
+        dialog.removeAttribute('open');
+      };
+
+      openButton.addEventListener('click', () => {
+        openDialog();
       });
 
       closeButton.addEventListener('click', () => {
-        sessionStorage.removeItem(openStateKey);
-        dialog.close();
+        safeStorage.remove(openStateKey);
+        closeDialog();
       });
 
       dialog.addEventListener('click', (event) => {
         if (event.target === dialog) {
-          sessionStorage.removeItem(openStateKey);
-          dialog.close();
+          safeStorage.remove(openStateKey);
+          closeDialog();
         }
       });
 
       form.addEventListener('submit', () => {
-        sessionStorage.setItem(openStateKey, 'true');
+        safeStorage.set(openStateKey, 'true');
         const birthdayInput = form.querySelector('input[name="contact[birthday]"]');
         const emailInput = form.querySelector('input[name="contact[email]"]');
         const tags = ['popup-signup'];
 
         if (emailInput && emailInput.value) {
-          sessionStorage.setItem(emailStateKey, emailInput.value.trim());
+          safeStorage.set(emailStateKey, emailInput.value.trim());
         }
 
         if (marketingCheckbox && marketingCheckbox.checked) {
@@ -293,13 +334,13 @@
         tagsInput.value = tags.join(',');
       });
 
-      if (sessionStorage.getItem(openStateKey) === 'true' && typeof dialog.showModal === 'function') {
-        dialog.showModal();
-        sessionStorage.removeItem(openStateKey);
+      if (safeStorage.get(openStateKey) === 'true') {
+        openDialog();
+        safeStorage.remove(openStateKey);
       }
 
       if (continueLink) {
-        const savedEmail = sessionStorage.getItem(emailStateKey);
+        const savedEmail = safeStorage.get(emailStateKey);
         if (savedEmail) {
           const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
           loginUrl.searchParams.set('email', savedEmail);
