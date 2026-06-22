@@ -28,6 +28,7 @@
 
       {%- form 'customer', class: 'popup-signup__form', data-popup-signup-form: '' -%}
         <input type="hidden" name="contact[tags]" value="popup-signup" data-popup-signup-tags>
+        <input type="hidden" name="customer[accepts_marketing]" value="false" data-popup-signup-marketing-hidden>
 
         <label class="popup-signup__field">
           <span class="popup-signup__label">First name</span>
@@ -76,6 +77,16 @@
               aria-invalid="true"
             {% endif %}
           >
+        </label>
+
+        <label class="popup-signup__consent">
+          <input
+            type="checkbox"
+            name="customer[accepts_marketing]"
+            value="true"
+            data-popup-signup-marketing
+          >
+          <span>I agree to receive email marketing updates.</span>
         </label>
 
         <button type="submit" class="popup-signup__submit button button-primary">Sign up</button>
@@ -183,6 +194,18 @@
     margin-top: 0.35rem;
   }
 
+  .popup-signup__consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .popup-signup__consent input {
+    margin-top: 0.15rem;
+  }
+
   .popup-signup__message {
     margin: 0.25rem 0 0;
     font-size: 0.9rem;
@@ -211,6 +234,7 @@
 
 <script>
   (() => {
+    const openStateKey = 'popup-signup-open';
     const roots = document.querySelectorAll('[data-popup-signup]');
 
     roots.forEach((root) => {
@@ -224,8 +248,10 @@
       const closeButton = root.querySelector('[data-popup-signup-close]');
       const form = root.querySelector('[data-popup-signup-form]');
       const tagsInput = root.querySelector('[data-popup-signup-tags]');
+      const marketingCheckbox = root.querySelector('[data-popup-signup-marketing]');
+      const marketingHiddenInput = root.querySelector('[data-popup-signup-marketing-hidden]');
 
-      if (!dialog || !openButton || !closeButton || !form || !tagsInput) {
+      if (!dialog || !openButton || !closeButton || !form || !tagsInput || !marketingHiddenInput) {
         return;
       }
 
@@ -236,24 +262,42 @@
       });
 
       closeButton.addEventListener('click', () => {
+        sessionStorage.removeItem(openStateKey);
         dialog.close();
       });
 
       dialog.addEventListener('click', (event) => {
         if (event.target === dialog) {
+          sessionStorage.removeItem(openStateKey);
           dialog.close();
         }
       });
 
       form.addEventListener('submit', () => {
+        sessionStorage.setItem(openStateKey, 'true');
         const birthdayInput = form.querySelector('input[name="contact[birthday]"]');
+        const tags = ['popup-signup'];
+
+        if (marketingCheckbox && marketingCheckbox.checked) {
+          tags.push('marketing-opt-in');
+          marketingHiddenInput.value = 'true';
+        } else {
+          marketingHiddenInput.value = 'false';
+        }
+
         if (!birthdayInput || !birthdayInput.value) {
-          tagsInput.value = 'popup-signup';
+          tagsInput.value = tags.join(',');
           return;
         }
 
-        tagsInput.value = `popup-signup,birthday:${birthdayInput.value}`;
+        tags.push(`birthday:${birthdayInput.value}`);
+        tagsInput.value = tags.join(',');
       });
+
+      if (sessionStorage.getItem(openStateKey) === 'true' && typeof dialog.showModal === 'function') {
+        dialog.showModal();
+        sessionStorage.removeItem(openStateKey);
+      }
     });
   })();
 </script>
