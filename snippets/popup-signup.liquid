@@ -1,4 +1,14 @@
-<div class="popup-signup" data-popup-signup>
+{% doc %}
+  @param {string} [client_id] - Customer Account API OAuth client ID. When provided, first name and last name are silently updated on the customer profile after login. Register the pages where this popup appears as Redirect URIs in your Customer Account API app settings.
+  @example
+  {% render 'popup-signup' %}
+  {% render 'popup-signup', client_id: 'your-client-id-here' %}
+{% enddoc %}
+
+<div class="popup-signup" data-popup-signup
+  {% if client_id != blank %}data-client-id="{{ client_id }}"{% endif %}
+  {% if customer %}data-customer-id="{{ customer.id }}"{% endif %}
+  data-shop-domain="{{ shop.permanent_domain }}">
   <button
     type="button"
     class="popup-signup__trigger button button-primary"
@@ -210,6 +220,99 @@
 
 <script>
   (() => {
+    function safeStorage(action, key, value) {
+      try {
+        if (action === 'get') return sessionStorage.getItem(key);
+        if (action === 'set') sessionStorage.setItem(key, value);
+        if (action === 'del') sessionStorage.removeItem(key);
+      } catch (_e) {}
+      return null;
+    }
+
+    async function generateVerifier() {
+      const buf = new Uint8Array(32);
+      crypto.getRandomValues(buf);
+      return btoa(String.fromCharCode(...buf)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    async function generateChallenge(verifier) {
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+      return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    function generateState() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2);
+    }
+
+    async function initiateAuth(shopDomain, clientId) {
+      const config = await (await fetch(`https://${shopDomain}/.well-known/openid-configuration`)).json();
+      const verifier = await generateVerifier();
+      const challenge = await generateChallenge(verifier);
+      const state = generateState();
+      const redirectUri = window.location.origin + window.location.pathname;
+
+      safeStorage('set', 'popup-signup-verifier', verifier);
+      safeStorage('set', 'popup-signup-state', state);
+      safeStorage('set', 'popup-signup-token-endpoint', config.token_endpoint);
+      safeStorage('set', 'popup-signup-redirect-uri', redirectUri);
+
+      const url = new URL(config.authorization_endpoint);
+      url.searchParams.set('client_id', clientId);
+      url.searchParams.set('response_type', 'code');
+      url.searchParams.set('redirect_uri', redirectUri);
+      url.searchParams.set('scope', 'openid email customer-account-api:full');
+      url.searchParams.set('state', state);
+      url.searchParams.set('code_challenge', challenge);
+      url.searchParams.set('code_challenge_method', 'S256');
+      url.searchParams.set('prompt', 'none');
+      window.location.assign(url.toString());
+    }
+
+    async function enrichCustomer(shopDomain, clientId, code) {
+      const verifier = safeStorage('get', 'popup-signup-verifier');
+      const tokenEndpoint = safeStorage('get', 'popup-signup-token-endpoint');
+      const redirectUri = safeStorage('get', 'popup-signup-redirect-uri');
+      const pendingJson = safeStorage('get', 'popup-signup-pending');
+      if (!verifier || !tokenEndpoint || !pendingJson) return;
+
+      const pending = JSON.parse(pendingJson);
+
+      const tokenResp = await fetch(tokenEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: clientId,
+          code,
+          redirect_uri: redirectUri,
+          code_verifier: verifier,
+        }),
+      });
+      const tokenData = await tokenResp.json();
+      if (!tokenData.access_token) return;
+
+      const apiConfig = await (await fetch(`https://${shopDomain}/.well-known/customer-account-api`)).json();
+
+      await fetch(apiConfig.graphql_api, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: tokenData.access_token },
+        body: JSON.stringify({
+          query: `mutation customerUpdate($input: CustomerUpdateInput!) {
+            customerUpdate(input: $input) { customer { id } userErrors { field message } }
+          }`,
+          variables: { input: { firstName: pending.firstName, lastName: pending.lastName } },
+        }),
+      });
+
+      ['popup-signup-pending', 'popup-signup-verifier', 'popup-signup-state',
+       'popup-signup-token-endpoint', 'popup-signup-redirect-uri'].forEach((k) => safeStorage('del', k));
+
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('code');
+      cleanUrl.searchParams.delete('state');
+      window.history.replaceState({}, '', cleanUrl.toString());
+    }
+
     const roots = document.querySelectorAll('[data-popup-signup]');
 
     roots.forEach((root) => {
@@ -218,6 +321,9 @@
       }
       root.dataset.popupSignupReady = 'true';
 
+      const clientId = root.dataset.clientId;
+      const customerId = root.dataset.customerId;
+      const shopDomain = root.dataset.shopDomain;
       const dialog = root.querySelector('[data-popup-signup-dialog]');
       const openButton = root.querySelector('[data-popup-signup-open]');
       const closeButton = root.querySelector('[data-popup-signup-close]');
@@ -229,52 +335,57 @@
         return;
       }
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const returnedState = urlParams.get('state');
+      const savedState = safeStorage('get', 'popup-signup-state');
+      const isCallback = code && returnedState && returnedState === savedState && clientId && shopDomain;
+
+      if (isCallback) {
+        enrichCustomer(shopDomain, clientId, code).catch(() => {});
+      }
+
       const openDialog = () => {
         if (typeof dialog.showModal === 'function') {
-          try {
-            dialog.showModal();
-            return;
-          } catch (_error) {}
+          try { dialog.showModal(); return; } catch (_e) {}
         }
-
         dialog.setAttribute('open', 'open');
       };
 
       const closeDialog = () => {
-        if (typeof dialog.close === 'function') {
-          dialog.close();
-          return;
-        }
-
+        if (typeof dialog.close === 'function') { dialog.close(); return; }
         dialog.removeAttribute('open');
       };
 
       openButton.addEventListener('click', () => {
-        if (successMessage) {
-          successMessage.hidden = true;
-        }
+        if (successMessage) successMessage.hidden = true;
         openDialog();
       });
 
-      closeButton.addEventListener('click', () => {
-        closeDialog();
-      });
+      closeButton.addEventListener('click', () => closeDialog());
 
       dialog.addEventListener('click', (event) => {
-        if (event.target === dialog) {
-          closeDialog();
-        }
+        if (event.target === dialog) closeDialog();
       });
 
       form.addEventListener('submit', (event) => {
         event.preventDefault();
 
+        const firstNameInput = form.querySelector('input[name="first_name"]');
+        const lastNameInput = form.querySelector('input[name="last_name"]');
+        const birthdayInput = form.querySelector('input[name="birthday"]');
         const emailInput = form.querySelector('input[name="email"]');
         const emailValue = emailInput && emailInput.value ? emailInput.value.trim() : '';
 
-        if (!emailValue || !continueLink) {
-          return;
+        if (clientId) {
+          safeStorage('set', 'popup-signup-pending', JSON.stringify({
+            firstName: firstNameInput ? firstNameInput.value.trim() : '',
+            lastName: lastNameInput ? lastNameInput.value.trim() : '',
+            birthday: birthdayInput ? birthdayInput.value : '',
+          }));
         }
+
+        if (!emailValue || !continueLink) return;
 
         const loginUrl = new URL(continueLink.getAttribute('href'), window.location.origin);
         const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -282,10 +393,12 @@
         loginUrl.searchParams.set('login_hint', emailValue);
         continueLink.setAttribute('href', loginUrl.toString());
 
-        if (successMessage) {
-          successMessage.hidden = false;
-        }
+        if (successMessage) successMessage.hidden = false;
       });
+
+      if (!isCallback && clientId && customerId && shopDomain && safeStorage('get', 'popup-signup-pending')) {
+        initiateAuth(shopDomain, clientId).catch(() => {});
+      }
     });
   })();
 </script>
