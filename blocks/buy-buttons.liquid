@@ -63,15 +63,20 @@
           value="{{ product.selected_or_first_available_variant.id }}"
         >
         <div class="product-form-property">
-          <label for="IkWilNietOntvangen-{{ block.id }}">
-            <input
-              id="IkWilNietOntvangen-{{ block.id }}"
-              type="checkbox"
-              name="properties[Ik wil niet ontvangen]"
-              value="Ja"
-            >
-            Ik wil niet ontvangen
-          </label>
+          <label for="IkWilNietOntvangen-{{ block.id }}">Ik wil niet ontvangen</label>
+          <input
+            id="IkWilNietOntvangen-{{ block.id }}"
+            type="text"
+            name="properties[Ik wil niet ontvangen]"
+          >
+        </div>
+        <div class="product-form-property">
+          <label for="OrderNumberOfFriend-{{ block.id }}">Order number of friend</label>
+          <input
+            id="OrderNumberOfFriend-{{ block.id }}"
+            type="text"
+            name="properties[Order number of friend]"
+          >
         </div>
         <div
           class="product-form-buttons spacing-style{% if block.settings.stacking %} product-form-buttons--stacked{% endif %}"
