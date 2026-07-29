@@ -63,6 +63,17 @@
           ref="variantId"
           value="{{ product.selected_or_first_available_variant.id }}"
         >
+        <div class="product-form-property">
+          <label for="IkWilNietOntvangen-{{ block.id }}">
+            <input
+              id="IkWilNietOntvangen-{{ block.id }}"
+              type="checkbox"
+              name="properties[Ik wil niet ontvangen]"
+              value="Ja"
+            >
+            Ik wil niet ontvangen
+          </label>
+        </div>
         <div
           class="product-form-buttons spacing-style{% if block.settings.stacking %} product-form-buttons--stacked{% endif %}"
           style="{% render 'spacing-style', settings: block.settings %}"
@@ -222,6 +233,17 @@
     @media screen and (width >= 750px) {
       gap: var(--gap-sm);
     }
+  }
+
+  .product-form-property {
+    margin-block-end: var(--margin-sm);
+  }
+
+  .product-form-property label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    cursor: pointer;
   }
 
   .product-form-buttons > *:not(.quantity-selector) {

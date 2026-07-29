@@ -276,11 +276,6 @@
             {{ line.properties._odoo_giftlist_name }}
           </div>
         {%- endif -%}
-                 {% if line.properties['📦'] != blank %}
-            <div class="product-option">
-                📦 {{ line.properties['📦'] }}
-            </div>
-        {% endif %}
 
         {% if line.variant.title != 'Default Title' and line.bundle_parent? == false %}
           <span class="order-list__item-variant">{{ line.variant.title }}</span><br/>
@@ -314,6 +309,7 @@
                       {% assign component_display = component.quantity %}
 
                       <span class="order-list__item-title">{{ component_display }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>
+
                       {% if component.variant.title != 'Default Title'%}
                         <span class="order-list__item-variant">{{ component.variant.title }}</span>
                       {% endif %}
@@ -349,9 +345,11 @@
 {% endfor %}
 
           {% endif %}
+
         {% if line.selling_plan_allocation %}
           <span class="order-list__item-variant">{{ line.selling_plan_allocation.selling_plan.name }}</span><br/>
         {% endif %}
+
         {% if line.refunded_quantity > 0 %}
           <span class="order-list__item-refunded">Terugbetaald</span>
         {% endif %}
@@ -549,6 +547,7 @@
                     {% endif %}
 
                     <span class="order-list__item-title component">{{ component.quantity }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>
+
                     {% if component.variant.title != 'Default Title'%}
                       <span class="order-list__item-variant">{{ component.variant.title }}</span>
                     {% endif %}
@@ -653,11 +652,6 @@
             {{ line.properties._odoo_giftlist_name }}
           </div>
         {%- endif -%}
-               {% if line.properties['📦'] %}
-            <div class="product-option">
-                📦 {{ line.properties['📦'] }}
-            </div>
-        {% endif %}
 
         {% if line.variant.title != 'Default Title' and line.bundle_parent? == false %}
           <span class="order-list__item-variant">{{ line.variant.title }}</span><br/>
@@ -691,6 +685,7 @@
                       {% assign component_display = component.quantity %}
 
                       <span class="order-list__item-title">{{ component_display }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>
+
                       {% if component.variant.title != 'Default Title'%}
                         <span class="order-list__item-variant">{{ component.variant.title }}</span>
                       {% endif %}
@@ -925,6 +920,7 @@
                     {% endif %}
 
                     <span class="order-list__item-title component">{{ component.quantity }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>
+
                     {% if component.variant.title != 'Default Title'%}
                       <span class="order-list__item-variant">{{ component.variant.title }}</span>
                     {% endif %}
@@ -1025,11 +1021,6 @@
             {{ line.properties._odoo_giftlist_name }}
           </div>
         {%- endif -%}
-               {% if line.properties['📦'] %}
-            <div class="product-option">
-                📦 {{ line.properties['📦'] }}
-            </div>
-        {% endif %}
 
         {% if line.variant.title != 'Default Title' and line.bundle_parent? == false %}
           <span class="order-list__item-variant">{{ line.variant.title }}</span><br/>
@@ -1063,6 +1054,7 @@
                       {% assign component_display = component.quantity %}
 
                       <span class="order-list__item-title">{{ component_display }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>
+
                       {% if component.variant.title != 'Default Title'%}
                         <span class="order-list__item-variant">{{ component.variant.title }}</span>
                       {% endif %}
@@ -1295,7 +1287,8 @@
                       {% assign component_title = component.title %}
                     {% endif %}
 
-                    <span class="order-list__item-title component">{{ component.quantity }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>          
+                    <span class="order-list__item-title component">{{ component.quantity }}&nbsp;&times;&nbsp;{{ component_title }}</span><br>
+
                     {% if component.variant.title != 'Default Title'%}
                       <span class="order-list__item-variant">{{ component.variant.title }}</span>
                     {% endif %}
@@ -1345,7 +1338,7 @@
   {% endif %}
   {% if discount_application.target_type == 'shipping_line' %}
     {% assign has_shipping_discount = true %}
-    {% assign shipping_discount_title = assign shipping_discount_title %}
+    {% assign shipping_discount_title = discount_application.title %}
     {% assign discount_value_price = discount_application.total_allocated_amount %}
     {% assign shipping_amount_minus_discount_value_price = shipping_price | minus: discount_value_price %}
     {% assign shipping_amount_minus_discount_value_price_abs = shipping_amount_minus_discount_value_price | abs %}
